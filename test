@@ -1,7 +1,9 @@
 -- Extract URLs containing "test.com" from all 4 columns, grouped by post ID
 WITH extracted_urls AS (
+    -- First table
     SELECT 
         id as post_id,
+        'first_table' as table_name,
         'body' as source_column,
         unnest(regexp_split_to_array(body, '\s+')) as potential_url
     FROM your_table_name
@@ -11,6 +13,7 @@ WITH extracted_urls AS (
     
     SELECT 
         id as post_id,
+        'first_table' as table_name,
         'image1' as source_column,
         image1 as potential_url
     FROM your_table_name
@@ -20,6 +23,7 @@ WITH extracted_urls AS (
     
     SELECT 
         id as post_id,
+        'first_table' as table_name,
         'image2' as source_column,
         image2 as potential_url
     FROM your_table_name
@@ -29,14 +33,37 @@ WITH extracted_urls AS (
     
     SELECT 
         id as post_id,
+        'first_table' as table_name,
         'image3' as source_column,
         image3 as potential_url
     FROM your_table_name
     WHERE image3 IS NOT NULL
+    
+    UNION ALL
+    
+    -- Second table (landing)
+    SELECT 
+        id as post_id,
+        'landing' as table_name,
+        'body' as source_column,
+        unnest(regexp_split_to_array(body, '\s+')) as potential_url
+    FROM landing
+    WHERE body IS NOT NULL
+    
+    UNION ALL
+    
+    SELECT 
+        id as post_id,
+        'landing' as table_name,
+        'img1' as source_column,
+        img1 as potential_url
+    FROM landing
+    WHERE img1 IS NOT NULL
 ),
 filtered_urls AS (
     SELECT 
         post_id,
+        table_name,
         source_column,
         potential_url
     FROM extracted_urls
@@ -45,33 +72,44 @@ filtered_urls AS (
 )
 SELECT 
     post_id,
-    array_agg(DISTINCT potential_url) as test_urls,
-    array_agg(DISTINCT source_column) as found_in_columns,
-    count(DISTINCT potential_url) as url_count
+    table_name,
+    potential_url as test_url,
+    source_column
 FROM filtered_urls
-GROUP BY post_id
-ORDER BY post_id;
+ORDER BY table_name, post_id, source_column;
 
--- Alternative simpler version if you just want the URLs without column source info:
-/*
+-- Alternative simpler version without grouping:
 SELECT 
     id as post_id,
-    array_agg(DISTINCT url) as test_urls,
-    count(DISTINCT url) as url_count
+    table_name,
+    url as test_url,
+    source_column
 FROM (
-    SELECT id, unnest(regexp_split_to_array(body, '\s+')) as url FROM your_table_name WHERE body IS NOT NULL
+    -- First table
+    SELECT id, 'first_table' as table_name, unnest(regexp_split_to_array(body, '\s+')) as url, 'body' as source_column 
+    FROM your_table_name WHERE body IS NOT NULL
     UNION ALL
-    SELECT id, image1 as url FROM your_table_name WHERE image1 IS NOT NULL
+    SELECT id, 'first_table' as table_name, image1 as url, 'image1' as source_column 
+    FROM your_table_name WHERE image1 IS NOT NULL
     UNION ALL
-    SELECT id, image2 as url FROM your_table_name WHERE image2 IS NOT NULL
+    SELECT id, 'first_table' as table_name, image2 as url, 'image2' as source_column 
+    FROM your_table_name WHERE image2 IS NOT NULL
     UNION ALL
-    SELECT id, image3 as url FROM your_table_name WHERE image3 IS NOT NULL
+    SELECT id, 'first_table' as table_name, image3 as url, 'image3' as source_column 
+    FROM your_table_name WHERE image3 IS NOT NULL
+    
+    UNION ALL
+    
+    -- Second table (landing)
+    SELECT id, 'landing' as table_name, unnest(regexp_split_to_array(body, '\s+')) as url, 'body' as source_column 
+    FROM landing WHERE body IS NOT NULL
+    UNION ALL
+    SELECT id, 'landing' as table_name, img1 as url, 'img1' as source_column 
+    FROM landing WHERE img1 IS NOT NULL
 ) combined
 WHERE url ILIKE '%test.com%' 
   AND url ~ '^https?://'
-GROUP BY id
-ORDER BY id;
-*/
+ORDER BY table_name, id, source_column;
 
 -- If you want to extract URLs from body text more precisely using regex:
 /*
