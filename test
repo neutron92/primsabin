@@ -1,41 +1,103 @@
-[^\s<>"]*)?)', '\1|||', 'gi'),
-      '\|\|\|'
-    ) as extracted_url
-  FROM your_table_name
-  WHERE body ~ 'https?://[^\s<>"]+\.(?:jpg|jpeg|png|gif|webp|svg|bmp|tiff)(?:\?[^\s<>"]*)?'
+-- Extract URLs containing "test.com" from all 4 columns, grouped by post ID
+WITH extracted_urls AS (
+    SELECT 
+        id as post_id,
+        'body' as source_column,
+        unnest(regexp_split_to_array(body, '\s+')) as potential_url
+    FROM your_table_name
+    WHERE body IS NOT NULL
+    
+    UNION ALL
+    
+    SELECT 
+        id as post_id,
+        'image1' as source_column,
+        image1 as potential_url
+    FROM your_table_name
+    WHERE image1 IS NOT NULL
+    
+    UNION ALL
+    
+    SELECT 
+        id as post_id,
+        'image2' as source_column,
+        image2 as potential_url
+    FROM your_table_name
+    WHERE image2 IS NOT NULL
+    
+    UNION ALL
+    
+    SELECT 
+        id as post_id,
+        'image3' as source_column,
+        image3 as potential_url
+    FROM your_table_name
+    WHERE image3 IS NOT NULL
 ),
-all_images AS (
-  -- Combine existing image columns with extracted URLs
-  SELECT id, image1 as image_url, 1 as source_type FROM your_table_name WHERE image1 IS NOT NULL
-  UNION ALL
-  SELECT id, image2 as image_url, 2 as source_type FROM your_table_name WHERE image2 IS NOT NULL
-  UNION ALL  
-  SELECT id, image3 as image_url, 3 as source_type FROM your_table_name WHERE image3 IS NOT NULL
-  UNION ALL
-  SELECT id, extracted_url as image_url, 4 as source_type 
-  FROM extracted_urls 
-  WHERE extracted_url != '' AND extracted_url IS NOT NULL
+filtered_urls AS (
+    SELECT 
+        post_id,
+        source_column,
+        potential_url
+    FROM extracted_urls
+    WHERE potential_url ILIKE '%test.com%'
+      AND potential_url ~ '^https?://'  -- Basic URL validation
 )
 SELECT 
-  id as post_id,
-  array_agg(image_url ORDER BY source_type) as all_image_urls,
-  count(*) as total_images
-FROM all_images
+    post_id,
+    array_agg(DISTINCT potential_url) as test_urls,
+    array_agg(DISTINCT source_column) as found_in_columns,
+    count(DISTINCT potential_url) as url_count
+FROM filtered_urls
+GROUP BY post_id
+ORDER BY post_id;
+
+-- Alternative simpler version if you just want the URLs without column source info:
+/*
+SELECT 
+    id as post_id,
+    array_agg(DISTINCT url) as test_urls,
+    count(DISTINCT url) as url_count
+FROM (
+    SELECT id, unnest(regexp_split_to_array(body, '\s+')) as url FROM your_table_name WHERE body IS NOT NULL
+    UNION ALL
+    SELECT id, image1 as url FROM your_table_name WHERE image1 IS NOT NULL
+    UNION ALL
+    SELECT id, image2 as url FROM your_table_name WHERE image2 IS NOT NULL
+    UNION ALL
+    SELECT id, image3 as url FROM your_table_name WHERE image3 IS NOT NULL
+) combined
+WHERE url ILIKE '%test.com%' 
+  AND url ~ '^https?://'
 GROUP BY id
 ORDER BY id;
+*/
 
--- Alternative simpler version if you just want the 4th column (extracted URLs containing "test.test")
--- WITH extracted_urls AS (
---   SELECT 
---     id as post_id,
---     unnest(regexp_matches(body, 'https?://[^\s<>"]*test\.test[^\s<>"]*\.(?:jpg|jpeg|png|gif|webp|svg|bmp|tiff)(?:\?[^\s<>"]*)?', 'gi')) as image_url
---   FROM your_table_name
---   WHERE body ~ 'https?://[^\s<>"]*test\.test[^\s<>"]*\.(?:jpg|jpeg|png|gif|webp|svg|bmp|tiff)(?:\?[^\s<>"]*)?'
--- )
--- SELECT 
---   post_id,
---   array_agg(DISTINCT image_url) as extracted_image_urls,
---   count(DISTINCT image_url) as url_count
--- FROM extracted_urls
--- GROUP BY post_id
--- ORDER BY post_id;
+-- If you want to extract URLs from body text more precisely using regex:
+/*
+SELECT 
+    id as post_id,
+    array_agg(DISTINCT url) as test_urls,
+    count(DISTINCT url) as url_count
+FROM (
+    SELECT 
+        id, 
+        unnest(regexp_split_to_array(
+            regexp_replace(body, '.*?(https?://[^\s]+).*', '\1', 'g'), 
+            '\s+'
+        )) as url 
+    FROM your_table_name 
+    WHERE body ~ 'https?://[^\s]*test\.com[^\s]*'
+    
+    UNION ALL
+    
+    SELECT id, image1 as url FROM your_table_name WHERE image1 ILIKE '%test.com%'
+    UNION ALL
+    SELECT id, image2 as url FROM your_table_name WHERE image2 ILIKE '%test.com%'
+    UNION ALL
+    SELECT id, image3 as url FROM your_table_name WHERE image3 ILIKE '%test.com%'
+) combined
+WHERE url ILIKE '%test.com%'
+GROUP BY id
+ORDER BY id;
+*/
