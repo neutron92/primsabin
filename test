@@ -1,375 +1,395 @@
-/* tailwind.config.css - Tailwind v4 */
 
-@import “tailwindcss”;
-
-/* Import Tailwind Typography Plugin */
-@plugin “@tailwindcss/typography”;
-
+/* Custom Spacing Variables */
 @theme {
-/* Breakpoints / Screens */
-–breakpoint-3sm: 23rem;
-–breakpoint-xxs: 23.4375rem;
-–breakpoint-xs: 30rem;
-–breakpoint-sm: 40rem;
-–breakpoint-md: 48rem;
-–breakpoint-lg: 64rem;
-–breakpoint-xl: 80rem;
-–breakpoint-2xl: 96rem;
-–breakpoint-3xl: 120rem;
+  /* Spacing Extensions */
+  --spacing-100: 25rem;
+  --spacing-header-height: 75px;
+  --spacing-mb-header-height: 45px;
+  --spacing-12\.5: 50px;
+  --spacing-18: 75px;
+  --spacing-desktop: calc(100vh - 75px - 40px);
+  --spacing-desktop-if: calc(100vh - 75px - 80px);
+  --spacing-desktop-if-mb: calc(100vh - 75px - 156px);
+  --spacing-desktop-if-md: calc(100vh - 75px - 156px);
+  --spacing-desktop-if-lg: calc(100vh - 75px - 186px);
+  --spacing-mobile: calc(100vh - 45px);
 
-/* Extended Spacing */
-–spacing-4_5: 1.125rem;
-–spacing-5_5: 1.375rem;
-–spacing-13: 3.25rem;
-–spacing-15: 3.75rem;
-–spacing-17: 4.25rem;
-–spacing-18: 4.5rem;
-–spacing-19: 4.75rem;
-–spacing-21: 5.25rem;
-–spacing-22: 5.5rem;
-–spacing-23: 5.75rem;
-–spacing-25: 6.25rem;
-–spacing-26: 6.5rem;
-–spacing-27: 6.75rem;
-–spacing-29: 7.25rem;
-–spacing-30: 7.5rem;
-–spacing-31: 7.75rem;
-–spacing-33: 8.25rem;
-–spacing-34: 8.5rem;
-–spacing-35: 8.75rem;
-–spacing-37: 9.25rem;
-–spacing-38: 9.5rem;
-–spacing-39: 9.75rem;
+  /* Colors */
+  --color-green-bnp: #39ac7f;
+  --color-base-light: #1eb3a0;
+  --color-acid-green: #caf939;
+  --color-blue-400: #569cfb;
+  --color-body: #43435c;
+  --color-dark: #14142b;
+  --color-gray-200: #e8e9f3;
+  --color-gray-300: #cacde3;
+  --color-gray-400: #a0a3bd;
+  --color-gray-500: #656887;
+  --color-gray-700: #43435c;
+  --color-gray-900: #14142b;
+  --color-light-gray: #f8f4f4;
+  --color-light-gray-200: #626262;
+  --color-emerald-100: #ecf7f5;
+  --color-emerald-200: #daefec;
+  --color-emerald-lime: #8fff6d;
+  --color-emerald-lime-light: #8fff6d7d;
+  --color-light: #f6f6fb;
+  --color-main-color: #1625ab;
+  --color-main-color-hover: #1a2cc9;
+  --color-red-100: #fcf1ee;
+  --color-red-200: #fae4e1;
+  --color-red-500: #d80800;
+  --color-red-600: #be3f23;
+  --color-red-error: #715959;
+  --color-black-light: #1d1d1b;
+  --color-to-rename: #715959;
+  --color-content-bg-black: #2a3631;
 
-/* Font Sizes */
-–font-size-xxs: 0.625rem;
-–font-size-2xs: 0.6875rem;
+  /* Font Families */
+  --font-family-bnp-type: BnppType;
+  --font-family-bnp-sans-condensed-bold: BnpSansCondensedBold;
+  --font-family-bnp-sans-condensed-extra-bold: BnpSansCondensedExtraBold;
+  --font-family-bnp-sans-condensed-regular: BnpSansCondensedRegular;
+  --font-family-bnp-type-bold: BnppTypeBold;
+  --font-family-bnpp-type-regular: BnppTypeRegular;
+  --font-family-bnp-sans: BnppSans;
+  --font-family-bnpp-sans-bold: BnppSansBold;
+  --font-family-open-sans: "Open Sans, Regular";
+  --font-family-open-sans-regular: OpenSansRegular;
+  --font-family-open-sans-bold: OpenSansBold;
+  --font-family-helvica-neue: "Helvetica Neue";
 
-/* Line Heights */
-–line-height-11_5: 2.875rem;
+  /* Font Sizes */
+  --font-size-2\.5xl: 1.75rem;
 
-/* Padding (si différent du spacing) */
-–padding-4_5: 1.125rem;
+  /* Line Heights */
+  --line-height-loose: 1.8;
 
-/* Colors - Greenmap */
-–color-greenmap: #35ac7f;
-–color-base-light: #1a03a0;
-–color-acid-green: #caf939;
+  /* Box Shadows */
+  --box-shadow-card: 0px 8px 38px -28px rgba(8, 14, 71, 0.75);
+  --box-shadow-main-color: 0px 4px 34px 0px rgba(22, 37, 171, 0.25);
 
-/* Colors - Blue */
-–color-blue-400: #6369cb;
+  /* Background Images */
+  --background-image-hero-image: url('/images/hero-image.jpg');
 
-/* Colors - Body & Dark */
-–color-body: #15435c;
-–color-dark: #121a2b;
+  /* Z-Index */
+  --z-index--1: -1;
 
-/* Colors - Gray Scale */
-–color-gray-200: #e8e8f3;
-–color-gray-300: #c9cde3;
-–color-gray-400: #aab3dd;
-–color-gray-500: #8d9ab7;
-–color-gray-600: #404454;
-–color-gray-800: #313138;
-
-/* Colors - Light Gray */
-–color-light-gray: #f9f4f4;
-–color-light-gray-200: #d26262;
-
-/* Colors - Emerald */
-–color-emerald-100: #ecf7f5;
-–color-emerald-200: #daefec;
-–color-emerald-lime: #81ffed;
-–color-emerald-lime-light: #81ffed72;
-
-/* Colors - Light */
-–color-light: #f9f0f9;
-
-/* Colors - Main Color */
-–color-main-color: #122d48;
-–color-main-color-hover: #2120c9;
-
-/* Colors - Red */
-–color-red-100: #fcf5e9;
-–color-red-200: #fee0ea;
-–color-red-500: #dd8800;
-–color-red-600: #e83f73;
-–color-red-error: #713959;
-
-/* Colors - Pink Note */
-–color-pink-note: #13331d1;
-–color-pink-note-light: #7195901;
-–color-pink-note-content-light: #2a3e31;
-
-/* Font Families */
-–font-family-bopptype: boppType;
-–font-family-bnpsanscondensedbold: BnpSansCondensedBold;
-–font-family-bnpsanscondensedextrabold: BnpSansCondensedExtraBold;
-–font-family-bnpsanscondensedregular: BnpSansCondensedRegular;
-–font-family-bnpsanscondensedboldregular: BnpSansCondensedBoldRegular;
-–font-family-bnptyperegular: BnpTypeRegular;
-–font-family-bnpsans: BnpSans;
-–font-family-bnpsansbold: BnpSansBold;
-–font-family-exosemi: exosemi;
-–font-family-exo-sans: Exo Sans;
-–font-family-exo-sans-regular: Exo Sans, Regular;
-–font-family-opensansbold: OpenSansBold;
-–font-family-helveticaneve: Helvetica Neue;
-
-/* Root Font Sizes - Responsive */
-–font-size-root-2_5xl: 1.75rem;
-–font-size-root-xl: 1.375rem;
-
-/* Line Heights - Responsive */
-–line-height-root-loose: 1.8;
-
-/* Margins - Responsive */
-–margin-root-7: 1.875rem;
-–margin-root-14: 3.5rem;
-–margin-root-22: 5.5rem;
-
-/* Header Heights */
-–header-height: 75px;
-
-/* Extended Spacing Values */
-–spacing-extend: 1fr 1fr 0.125rem;
-
-/* Z-Index */
-–z-index-n1: -1;
+  /* Animations */
+  --animate-slide-r: slide-r-in 1s ease-in-out;
+  --animate-slide-l: slide-l-in 1s ease-in-out;
 }
 
-/* Custom Utilities */
+/* Keyframes */
+@keyframes slide-r-in {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-l-in {
+  0% {
+    opacity: 0;
+    transform: translateX(50%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Typography Prose Styles */
+@layer components {
+  .prose {
+    & img {
+      margin: 0;
+    }
+
+    & h2 {
+      font-size: 26px;
+      font-family: BnpSansCondensedBold;
+      line-height: 34px;
+      letter-spacing: 0.26px;
+      color: #626262;
+      margin-top: 0;
+      margin-bottom: 0;
+      font-weight: unset;
+    }
+
+    & h3 {
+      font-size: 20px;
+      font-family: BnpSansCondensedBold;
+      line-height: 24px;
+      letter-spacing: 0;
+      color: #626262;
+      margin-top: 0;
+      margin-bottom: 0;
+      font-weight: unset;
+    }
+
+    & h4 {
+      font-size: 14px;
+      font-family: OpenSansBold;
+      font-weight: bold;
+      line-height: 26px;
+      letter-spacing: 0.13px;
+      color: #626262;
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+
+    & h5 {
+      font-size: 14px;
+      font-family: BnpSansCondensedBold;
+      line-height: 14px;
+      letter-spacing: 0;
+      color: #626262;
+      margin-top: 0;
+      margin-bottom: 0;
+      font-weight: unset;
+    }
+
+    & p {
+      font-size: 14px;
+      font-family: OpenSansRegular;
+      line-height: 26px;
+      letter-spacing: 0;
+      color: #626262;
+      margin-top: 0;
+    }
+
+    & a {
+      font-size: 14px;
+      font-family: OpenSansRegular;
+      line-height: 26px;
+      letter-spacing: 0;
+      color: black;
+    }
+
+    & i {
+      font-size: 14px;
+      font-family: OpenSansRegular;
+      line-height: 26px;
+      letter-spacing: 0;
+      color: #626262;
+    }
+
+    & u {
+      font-family: OpenSansRegular;
+      font-size: 14px;
+      line-height: 28px;
+      letter-spacing: 0;
+    }
+
+    & strong {
+      font-size: 14px;
+      font-family: OpenSansBold;
+      line-height: 26px;
+      letter-spacing: 0;
+      color: #626262;
+    }
+
+    & li {
+      font-size: 14px;
+      font-family: OpenSansRegular;
+      line-height: 26px;
+      letter-spacing: 0;
+      color: #626262;
+    }
+
+    & td {
+      font-size: 14px;
+      font-family: OpenSansRegular;
+      line-height: 26px;
+      letter-spacing: 0;
+      color: #626262;
+    }
+
+    & figure.image figcaption {
+      font-size: 14px !important;
+      font-family: BnpSansCondensedRegular;
+      line-height: 18px !important;
+      letter-spacing: 0.17px;
+      color: #626262;
+      margin-top: 15px;
+      margin-bottom: 0;
+      font-weight: unset;
+    }
+
+    /* Simple Quote Styles - Small */
+    & .simple-quote {
+      background-color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 25px 25px 25px;
+      padding-top: 5rem;
+      font-size: 18px;
+      font-family: bnpSansCondensedRegular;
+      line-height: 23px;
+      letter-spacing: 0.24px;
+    }
+
+    & .simple-quote blockquote {
+      position: relative;
+      color: #3c3145;
+      border-left-width: 0;
+      font-size: 20px;
+      font-family: bnpSansCondensedRegular;
+      line-height: 26px;
+      letter-spacing: 0.16px;
+      padding: 0 !important;
+      text-align: center;
+    }
+
+    & .simple-quote blockquote::before {
+      content: url(/svg/quotes.svg);
+      position: absolute;
+      top: -2.5rem;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 42px;
+      height: 29px;
+    }
+
+    & .simple-quote figcaption {
+      margin-top: 26px;
+      font-size: 16px;
+      font-family: bnpSansCondensedRegular;
+      line-height: 20px;
+      letter-spacing: 0.14px;
+    }
+  }
+
+  /* Medium Breakpoint Prose Styles */
+  @media (min-width: 768px) {
+    .prose {
+      & h2 {
+        font-size: 30px;
+        line-height: 36px;
+        letter-spacing: 0.24px;
+      }
+
+      & h3 {
+        font-size: 24px;
+        line-height: 30px;
+        letter-spacing: 0;
+      }
+
+      & h4 {
+        font-size: 16px;
+        line-height: 28px;
+        letter-spacing: 0;
+      }
+
+      & h5 {
+        font-size: 18px;
+        line-height: 24px;
+        letter-spacing: 0;
+      }
+
+      & p {
+        font-size: 16px;
+        line-height: 28px;
+        letter-spacing: 0;
+      }
+
+      & a {
+        font-size: 16px;
+        line-height: 26px;
+        letter-spacing: 0;
+      }
+
+      & i {
+        font-size: 16px;
+        line-height: 26px;
+        letter-spacing: 0;
+      }
+
+      & u {
+        font-size: 16px;
+        line-height: 28px;
+        letter-spacing: 0;
+      }
+
+      & strong {
+        font-size: 16px;
+        line-height: 28px;
+        letter-spacing: 0;
+      }
+
+      & li {
+        font-size: 16px;
+        line-height: 28px;
+        letter-spacing: 0;
+      }
+
+      & td {
+        font-size: 16px;
+        line-height: 28px;
+        letter-spacing: 0;
+      }
+
+      & figure.image figcaption {
+        font-size: 18px !important;
+        line-height: 23px !important;
+        letter-spacing: 0;
+        margin-top: 20px;
+      }
+
+      /* Simple Quote Styles - Medium */
+      & .simple-quote {
+        padding: 40px 80px 28px 80px;
+        padding-top: 5rem;
+      }
+
+      & .simple-quote blockquote {
+        font-size: 24px;
+        line-height: 30px;
+        letter-spacing: 0.19px;
+      }
+
+      & .simple-quote figcaption {
+        font-size: 18px;
+        line-height: 23px;
+        letter-spacing: 0.14px;
+      }
+    }
+  }
+}
+
+/* Safelist - Add these as utility classes if needed */
 @layer utilities {
-/* Extend Spacing Utilities */
-.extend-spacing {
-@apply p-[var(–spacing-extend)];
+  .text-\[\#2A3631\] {
+    color: #2a3631;
+  }
+  .text-\[\#ffffff\] {
+    color: #ffffff;
+  }
+  .bg-\[\#E2F3EC\] {
+    background-color: #e2f3ec;
+  }
+  .bg-\[\#84D6B6\] {
+    background-color: #84d6b6;
+  }
+  .bg-\[\#127D54\] {
+    background-color: #127d54;
+  }
+  .bg-\[\#B2E5D1\] {
+    background-color: #b2e5d1;
+  }
+  .bg-\[\#D2368E\] {
+    background-color: #d2368e;
+  }
+  .bg-\[\#425465\] {
+    background-color: #425465;
+  }
+  .bg-\[\#F9DE4B\] {
+    background-color: #f9de4b;
+  }
 }
-
-/* Reset Prose Margins */
-.reset-prose h1,
-.reset-prose h2,
-.reset-prose h3,
-.reset-prose h4,
-.reset-prose h5,
-.reset-prose h6,
-.reset-prose p {
-margin: 0;
-}
-
-/* Desktop Spacing Utilities */
-.desktop:calc-100vh-75px {
-height: calc(100vh - 75px);
-}
-
-.desktop-lg:calc-100vh-75px-1dpx {
-height: calc(100vh - 75px - 1dpx);
-}
-
-.desktop-lg-mb:calc-100vh-75px-1dpx {
-margin-bottom: calc(100vh - 75px - 1dpx);
-}
-
-.desktop-lg-mb:calc-100vh-75px-15dpx {
-margin-bottom: calc(100vh - 75px - 15dpx);
-}
-
-.desktop-lg-lg:calc-100vh-75px-16dpx {
-height: calc(100vh - 75px - 16dpx);
-}
-
-.mobile:calc-100vh-45px {
-height: calc(100vh - 45px);
-}
-}
-
-/* Background Image */
-@layer components {
-.hero-image {
-background-image: url(’/images/hero-image.jpg’);
-}
-}
-
-/* Box Shadow Custom */
-@layer utilities {
-.box-shadow-custom {
-box-shadow:
-0px 80px 38px -28px rgba(0, 14, 71, 0.75),
-0px 4px 4px 0px rgba(22, 37, 171, 0.25);
-}
-}
-
-/* Typography Plugin Configuration */
-@layer components {
-.prose {
-/* Simple Quote Prose */
-& .simple-quote {
-@apply flex flex-col items-center p-10 md:p-[25px] font-[‘BnpSansCondensedRegular’] text-lg leading-[23px] tracking-[0.24px];
-background-color: #ffffff;
-}
-
-```
-& .simple-quote blockquote {
-  @apply relative;
-  color: #3c3145;
-  border-left-width: 0;
-  font-size: 20px;
-  font-family: 'BnpSansCondensedRegular';
-  line-height: 26px;
-  letter-spacing: 0.16px;
-  padding: 0;
-  text-align: center;
-}
-
-& .simple-quote blockquote::before {
-  content: url(/svg/quotes.svg);
-  position: absolute;
-  top: -2.5rem;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 42px;
-  height: 29px;
-}
-
-& .simple-quote figcaption {
-  @apply mt-6 text-base font-['BnpSansCondensedRegular'] leading-[20px] tracking-[0.14px];
-  margin-top: 26px;
-}
-
-/* Quote MD */
-& .quote-md .simple-quote {
-  @apply bg-[#ffffff] flex flex-col items-center p-10 md:p-[25px] font-['BnpSansCondensedRegular'] text-lg leading-[23px] tracking-[0.24px];
-}
-
-& .quote-md .simple-quote blockquote {
-  @apply relative;
-  color: #3c3145;
-  border-left-width: 0;
-  font-size: 24px;
-  font-family: 'BnpSansCondensedRegular';
-  line-height: 30px;
-  letter-spacing: 0.16px;
-  padding: 0;
-  text-align: center;
-}
-
-& .quote-md .simple-quote blockquote::before {
-  content: url(/svg/quotes.svg);
-  position: absolute;
-  top: -2.5rem;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 42px;
-  height: 29px;
-}
-
-& .quote-md .simple-quote figcaption {
-  @apply mt-6 text-base font-['BnpSansCondensedRegular'] leading-[23px] tracking-[0.14px];
-  margin-top: 26px;
-}
-
-/* Quote XL */
-& .quote-xl .simple-quote {
-  @apply bg-[#ffffff] flex flex-col items-center p-10 md:p-[80px_80px_28px_80px] font-['BnpSansCondensedRegular'] text-lg leading-[23px] tracking-[0.24px];
-}
-
-& .quote-xl .simple-quote blockquote {
-  @apply relative;
-  color: #3c3145;
-  border-left-width: 0;
-  font-size: 24px;
-  font-family: 'BnpSansCondensedRegular';
-  line-height: 30px;
-  letter-spacing: 0.16px;
-  padding: 0;
-  text-align: center;
-}
-
-& .quote-xl .simple-quote blockquote::before {
-  content: url(/svg/quotes.svg);
-  position: absolute;
-  top: -2.5rem;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 42px;
-  height: 29px;
-}
-
-& .quote-xl .simple-quote figcaption {
-  @apply mt-6 text-base font-['BnpSansCondensedRegular'] leading-[23px] tracking-[0.14px];
-  margin-top: 26px;
-}
-```
-
-}
-}
-
-/* Process CSS - Reset */
-@layer components {
-.process-css {
-& h2,
-& h3,
-& h4,
-& p,
-& ul,
-& li {
-margin: 0;
-}
-}
-
-/* Responsive Typography - h2 */
-.process-css h2 {
-font-size: 30px;
-line-height: 36px;
-letter-spacing: 0.24px;
-
-```
-@media (min-width: 48rem) {
-  font-size: 24px;
-  line-height: 30px;
-}
-```
-
-}
-
-/* Additional responsive styles… */
-.process-css h3 {
-font-size: 16px;
-line-height: 26px;
-letter-spacing: 0;
-
-```
-@media (min-width: 48rem) {
-  font-size: 10px;
-  line-height: 24px;
-}
-```
-
-}
-
-/* Continue for other elements… */
-}
-
-/* Animation Keyframes */
-@keyframes slide-in {
-0% {
-opacity: 0;
-transform: translateX(-50px);
-}
-100% {
-opacity: 1;
-transform: translateX(0);
-}
-}
-
-@keyframes slide-up {
-0% {
-opacity: 0;
-transform: translateY(50px);
-}
-100% {
-opacity: 1;
-transform: translateY(0);
-}
-}
-
-/* Safelist Configuration - Note: In v4, safelist is handled differently */
-/* You may need to ensure these classes are used in your HTML/JSX or add them via a custom plugin */
