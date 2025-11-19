@@ -1,141 +1,375 @@
--- Extract URLs containing "test.com" from all 4 columns, grouped by post ID
-WITH extracted_urls AS (
-    -- First table
-    SELECT 
-        id as post_id,
-        'first_table' as table_name,
-        'body' as source_column,
-        unnest(regexp_split_to_array(body, '\s+')) as potential_url
-    FROM your_table_name
-    WHERE body IS NOT NULL
-    
-    UNION ALL
-    
-    SELECT 
-        id as post_id,
-        'first_table' as table_name,
-        'image1' as source_column,
-        image1 as potential_url
-    FROM your_table_name
-    WHERE image1 IS NOT NULL
-    
-    UNION ALL
-    
-    SELECT 
-        id as post_id,
-        'first_table' as table_name,
-        'image2' as source_column,
-        image2 as potential_url
-    FROM your_table_name
-    WHERE image2 IS NOT NULL
-    
-    UNION ALL
-    
-    SELECT 
-        id as post_id,
-        'first_table' as table_name,
-        'image3' as source_column,
-        image3 as potential_url
-    FROM your_table_name
-    WHERE image3 IS NOT NULL
-    
-    UNION ALL
-    
-    -- Second table (landing)
-    SELECT 
-        id as post_id,
-        'landing' as table_name,
-        'body' as source_column,
-        unnest(regexp_split_to_array(body, '\s+')) as potential_url
-    FROM landing
-    WHERE body IS NOT NULL
-    
-    UNION ALL
-    
-    SELECT 
-        id as post_id,
-        'landing' as table_name,
-        'img1' as source_column,
-        img1 as potential_url
-    FROM landing
-    WHERE img1 IS NOT NULL
-),
-filtered_urls AS (
-    SELECT 
-        post_id,
-        table_name,
-        source_column,
-        potential_url
-    FROM extracted_urls
-    WHERE potential_url ILIKE '%test.com%'
-      AND potential_url ~ '^https?://'  -- Basic URL validation
-)
-SELECT 
-    post_id,
-    table_name,
-    potential_url as test_url,
-    source_column
-FROM filtered_urls
-ORDER BY table_name, post_id, source_column;
+/* tailwind.config.css - Tailwind v4 */
 
--- Alternative simpler version without grouping:
-SELECT 
-    id as post_id,
-    table_name,
-    url as test_url,
-    source_column
-FROM (
-    -- First table
-    SELECT id, 'first_table' as table_name, unnest(regexp_split_to_array(body, '\s+')) as url, 'body' as source_column 
-    FROM your_table_name WHERE body IS NOT NULL
-    UNION ALL
-    SELECT id, 'first_table' as table_name, image1 as url, 'image1' as source_column 
-    FROM your_table_name WHERE image1 IS NOT NULL
-    UNION ALL
-    SELECT id, 'first_table' as table_name, image2 as url, 'image2' as source_column 
-    FROM your_table_name WHERE image2 IS NOT NULL
-    UNION ALL
-    SELECT id, 'first_table' as table_name, image3 as url, 'image3' as source_column 
-    FROM your_table_name WHERE image3 IS NOT NULL
-    
-    UNION ALL
-    
-    -- Second table (landing)
-    SELECT id, 'landing' as table_name, unnest(regexp_split_to_array(body, '\s+')) as url, 'body' as source_column 
-    FROM landing WHERE body IS NOT NULL
-    UNION ALL
-    SELECT id, 'landing' as table_name, img1 as url, 'img1' as source_column 
-    FROM landing WHERE img1 IS NOT NULL
-) combined
-WHERE url ILIKE '%test.com%' 
-  AND url ~ '^https?://'
-ORDER BY table_name, id, source_column;
+@import “tailwindcss”;
 
--- If you want to extract URLs from body text more precisely using regex:
-/*
-SELECT 
-    id as post_id,
-    array_agg(DISTINCT url) as test_urls,
-    count(DISTINCT url) as url_count
-FROM (
-    SELECT 
-        id, 
-        unnest(regexp_split_to_array(
-            regexp_replace(body, '.*?(https?://[^\s]+).*', '\1', 'g'), 
-            '\s+'
-        )) as url 
-    FROM your_table_name 
-    WHERE body ~ 'https?://[^\s]*test\.com[^\s]*'
-    
-    UNION ALL
-    
-    SELECT id, image1 as url FROM your_table_name WHERE image1 ILIKE '%test.com%'
-    UNION ALL
-    SELECT id, image2 as url FROM your_table_name WHERE image2 ILIKE '%test.com%'
-    UNION ALL
-    SELECT id, image3 as url FROM your_table_name WHERE image3 ILIKE '%test.com%'
-) combined
-WHERE url ILIKE '%test.com%'
-GROUP BY id
-ORDER BY id;
-*/
+/* Import Tailwind Typography Plugin */
+@plugin “@tailwindcss/typography”;
+
+@theme {
+/* Breakpoints / Screens */
+–breakpoint-3sm: 23rem;
+–breakpoint-xxs: 23.4375rem;
+–breakpoint-xs: 30rem;
+–breakpoint-sm: 40rem;
+–breakpoint-md: 48rem;
+–breakpoint-lg: 64rem;
+–breakpoint-xl: 80rem;
+–breakpoint-2xl: 96rem;
+–breakpoint-3xl: 120rem;
+
+/* Extended Spacing */
+–spacing-4_5: 1.125rem;
+–spacing-5_5: 1.375rem;
+–spacing-13: 3.25rem;
+–spacing-15: 3.75rem;
+–spacing-17: 4.25rem;
+–spacing-18: 4.5rem;
+–spacing-19: 4.75rem;
+–spacing-21: 5.25rem;
+–spacing-22: 5.5rem;
+–spacing-23: 5.75rem;
+–spacing-25: 6.25rem;
+–spacing-26: 6.5rem;
+–spacing-27: 6.75rem;
+–spacing-29: 7.25rem;
+–spacing-30: 7.5rem;
+–spacing-31: 7.75rem;
+–spacing-33: 8.25rem;
+–spacing-34: 8.5rem;
+–spacing-35: 8.75rem;
+–spacing-37: 9.25rem;
+–spacing-38: 9.5rem;
+–spacing-39: 9.75rem;
+
+/* Font Sizes */
+–font-size-xxs: 0.625rem;
+–font-size-2xs: 0.6875rem;
+
+/* Line Heights */
+–line-height-11_5: 2.875rem;
+
+/* Padding (si différent du spacing) */
+–padding-4_5: 1.125rem;
+
+/* Colors - Greenmap */
+–color-greenmap: #35ac7f;
+–color-base-light: #1a03a0;
+–color-acid-green: #caf939;
+
+/* Colors - Blue */
+–color-blue-400: #6369cb;
+
+/* Colors - Body & Dark */
+–color-body: #15435c;
+–color-dark: #121a2b;
+
+/* Colors - Gray Scale */
+–color-gray-200: #e8e8f3;
+–color-gray-300: #c9cde3;
+–color-gray-400: #aab3dd;
+–color-gray-500: #8d9ab7;
+–color-gray-600: #404454;
+–color-gray-800: #313138;
+
+/* Colors - Light Gray */
+–color-light-gray: #f9f4f4;
+–color-light-gray-200: #d26262;
+
+/* Colors - Emerald */
+–color-emerald-100: #ecf7f5;
+–color-emerald-200: #daefec;
+–color-emerald-lime: #81ffed;
+–color-emerald-lime-light: #81ffed72;
+
+/* Colors - Light */
+–color-light: #f9f0f9;
+
+/* Colors - Main Color */
+–color-main-color: #122d48;
+–color-main-color-hover: #2120c9;
+
+/* Colors - Red */
+–color-red-100: #fcf5e9;
+–color-red-200: #fee0ea;
+–color-red-500: #dd8800;
+–color-red-600: #e83f73;
+–color-red-error: #713959;
+
+/* Colors - Pink Note */
+–color-pink-note: #13331d1;
+–color-pink-note-light: #7195901;
+–color-pink-note-content-light: #2a3e31;
+
+/* Font Families */
+–font-family-bopptype: boppType;
+–font-family-bnpsanscondensedbold: BnpSansCondensedBold;
+–font-family-bnpsanscondensedextrabold: BnpSansCondensedExtraBold;
+–font-family-bnpsanscondensedregular: BnpSansCondensedRegular;
+–font-family-bnpsanscondensedboldregular: BnpSansCondensedBoldRegular;
+–font-family-bnptyperegular: BnpTypeRegular;
+–font-family-bnpsans: BnpSans;
+–font-family-bnpsansbold: BnpSansBold;
+–font-family-exosemi: exosemi;
+–font-family-exo-sans: Exo Sans;
+–font-family-exo-sans-regular: Exo Sans, Regular;
+–font-family-opensansbold: OpenSansBold;
+–font-family-helveticaneve: Helvetica Neue;
+
+/* Root Font Sizes - Responsive */
+–font-size-root-2_5xl: 1.75rem;
+–font-size-root-xl: 1.375rem;
+
+/* Line Heights - Responsive */
+–line-height-root-loose: 1.8;
+
+/* Margins - Responsive */
+–margin-root-7: 1.875rem;
+–margin-root-14: 3.5rem;
+–margin-root-22: 5.5rem;
+
+/* Header Heights */
+–header-height: 75px;
+
+/* Extended Spacing Values */
+–spacing-extend: 1fr 1fr 0.125rem;
+
+/* Z-Index */
+–z-index-n1: -1;
+}
+
+/* Custom Utilities */
+@layer utilities {
+/* Extend Spacing Utilities */
+.extend-spacing {
+@apply p-[var(–spacing-extend)];
+}
+
+/* Reset Prose Margins */
+.reset-prose h1,
+.reset-prose h2,
+.reset-prose h3,
+.reset-prose h4,
+.reset-prose h5,
+.reset-prose h6,
+.reset-prose p {
+margin: 0;
+}
+
+/* Desktop Spacing Utilities */
+.desktop:calc-100vh-75px {
+height: calc(100vh - 75px);
+}
+
+.desktop-lg:calc-100vh-75px-1dpx {
+height: calc(100vh - 75px - 1dpx);
+}
+
+.desktop-lg-mb:calc-100vh-75px-1dpx {
+margin-bottom: calc(100vh - 75px - 1dpx);
+}
+
+.desktop-lg-mb:calc-100vh-75px-15dpx {
+margin-bottom: calc(100vh - 75px - 15dpx);
+}
+
+.desktop-lg-lg:calc-100vh-75px-16dpx {
+height: calc(100vh - 75px - 16dpx);
+}
+
+.mobile:calc-100vh-45px {
+height: calc(100vh - 45px);
+}
+}
+
+/* Background Image */
+@layer components {
+.hero-image {
+background-image: url(’/images/hero-image.jpg’);
+}
+}
+
+/* Box Shadow Custom */
+@layer utilities {
+.box-shadow-custom {
+box-shadow:
+0px 80px 38px -28px rgba(0, 14, 71, 0.75),
+0px 4px 4px 0px rgba(22, 37, 171, 0.25);
+}
+}
+
+/* Typography Plugin Configuration */
+@layer components {
+.prose {
+/* Simple Quote Prose */
+& .simple-quote {
+@apply flex flex-col items-center p-10 md:p-[25px] font-[‘BnpSansCondensedRegular’] text-lg leading-[23px] tracking-[0.24px];
+background-color: #ffffff;
+}
+
+```
+& .simple-quote blockquote {
+  @apply relative;
+  color: #3c3145;
+  border-left-width: 0;
+  font-size: 20px;
+  font-family: 'BnpSansCondensedRegular';
+  line-height: 26px;
+  letter-spacing: 0.16px;
+  padding: 0;
+  text-align: center;
+}
+
+& .simple-quote blockquote::before {
+  content: url(/svg/quotes.svg);
+  position: absolute;
+  top: -2.5rem;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 42px;
+  height: 29px;
+}
+
+& .simple-quote figcaption {
+  @apply mt-6 text-base font-['BnpSansCondensedRegular'] leading-[20px] tracking-[0.14px];
+  margin-top: 26px;
+}
+
+/* Quote MD */
+& .quote-md .simple-quote {
+  @apply bg-[#ffffff] flex flex-col items-center p-10 md:p-[25px] font-['BnpSansCondensedRegular'] text-lg leading-[23px] tracking-[0.24px];
+}
+
+& .quote-md .simple-quote blockquote {
+  @apply relative;
+  color: #3c3145;
+  border-left-width: 0;
+  font-size: 24px;
+  font-family: 'BnpSansCondensedRegular';
+  line-height: 30px;
+  letter-spacing: 0.16px;
+  padding: 0;
+  text-align: center;
+}
+
+& .quote-md .simple-quote blockquote::before {
+  content: url(/svg/quotes.svg);
+  position: absolute;
+  top: -2.5rem;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 42px;
+  height: 29px;
+}
+
+& .quote-md .simple-quote figcaption {
+  @apply mt-6 text-base font-['BnpSansCondensedRegular'] leading-[23px] tracking-[0.14px];
+  margin-top: 26px;
+}
+
+/* Quote XL */
+& .quote-xl .simple-quote {
+  @apply bg-[#ffffff] flex flex-col items-center p-10 md:p-[80px_80px_28px_80px] font-['BnpSansCondensedRegular'] text-lg leading-[23px] tracking-[0.24px];
+}
+
+& .quote-xl .simple-quote blockquote {
+  @apply relative;
+  color: #3c3145;
+  border-left-width: 0;
+  font-size: 24px;
+  font-family: 'BnpSansCondensedRegular';
+  line-height: 30px;
+  letter-spacing: 0.16px;
+  padding: 0;
+  text-align: center;
+}
+
+& .quote-xl .simple-quote blockquote::before {
+  content: url(/svg/quotes.svg);
+  position: absolute;
+  top: -2.5rem;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 42px;
+  height: 29px;
+}
+
+& .quote-xl .simple-quote figcaption {
+  @apply mt-6 text-base font-['BnpSansCondensedRegular'] leading-[23px] tracking-[0.14px];
+  margin-top: 26px;
+}
+```
+
+}
+}
+
+/* Process CSS - Reset */
+@layer components {
+.process-css {
+& h2,
+& h3,
+& h4,
+& p,
+& ul,
+& li {
+margin: 0;
+}
+}
+
+/* Responsive Typography - h2 */
+.process-css h2 {
+font-size: 30px;
+line-height: 36px;
+letter-spacing: 0.24px;
+
+```
+@media (min-width: 48rem) {
+  font-size: 24px;
+  line-height: 30px;
+}
+```
+
+}
+
+/* Additional responsive styles… */
+.process-css h3 {
+font-size: 16px;
+line-height: 26px;
+letter-spacing: 0;
+
+```
+@media (min-width: 48rem) {
+  font-size: 10px;
+  line-height: 24px;
+}
+```
+
+}
+
+/* Continue for other elements… */
+}
+
+/* Animation Keyframes */
+@keyframes slide-in {
+0% {
+opacity: 0;
+transform: translateX(-50px);
+}
+100% {
+opacity: 1;
+transform: translateX(0);
+}
+}
+
+@keyframes slide-up {
+0% {
+opacity: 0;
+transform: translateY(50px);
+}
+100% {
+opacity: 1;
+transform: translateY(0);
+}
+}
+
+/* Safelist Configuration - Note: In v4, safelist is handled differently */
+/* You may need to ensure these classes are used in your HTML/JSX or add them via a custom plugin */
