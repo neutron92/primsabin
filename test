@@ -1,29 +1,17 @@
 /* src/styles/tailwind.css */
-
-/* 1) Import core tailwind (v4 uses CSS-first configuration) */
 @import "tailwindcss";
-
-/* 2) Load plugins you need (typography used in your original config) */
 @plugin "@tailwindcss/typography";
 
-/* 3) SAFELIST: classes you previously had in `safelist` in v3.
-   Tailwind v4 uses @source inline(...) or separate source files to force-include classes.
-   Put your color/bg/text classes here so they are always emitted.
-*/
-@source inline(
-  "text-[#2A3631] text-[#ffffff] text-white bg-[#E2F3EC] bg-[#84D6B6] bg-[#127D54] bg-[#B2E5D1] bg-[#D2368E] bg-[#425465] bg-[#F9DE4B]"
-);
+/* --- SAFELIST: must be a single quoted string --- */
+@source inline("text-[#2A3631] text-[#ffffff] text-white bg-[#E2F3EC] bg-[#84D6B6] bg-[#127D54] bg-[#B2E5D1] bg-[#D2368E] bg-[#425465] bg-[#F9DE4B]");
 
-/* 4) THEME: declare theme variables (namespaced). 
-   These produce utilities like `bg-greenBnp`, `text-greenBnp`, `font-bnpType`, and spacing utilities.
-   Note: spacing keys with '.' were converted to '-' (12.5 -> 12-5) to be valid CSS custom prop identifiers.
-*/
+/* THEME TOKENS */
 @theme {
-  /* --- SPACING (maps to spacing utilities like p-, m-, w-, h-, etc.) --- */
+  /* spacing tokens (converted 12.5 -> 12-5 for valid names) */
   --spacing-100: 25rem;
   --spacing-headerHeight: 75px;
   --spacing-mbHeaderHeight: 45px;
-  --spacing-12-5: 50px; /* was 12.5 */
+  --spacing-12-5: 50px;
   --spacing-18: 75px;
   --spacing-desktop: calc(100vh - 75px - 40px);
   --spacing-desktop-if: calc(100vh - 75px - 80px);
@@ -32,7 +20,7 @@
   --spacing-desktop-if-lg: calc(100vh - 75px - 186px);
   --spacing-mobile: calc(100vh - 45px);
 
-  /* --- COLORS (map to bg-*, text-*, border-*, etc.) --- */
+  /* colors (follow tailwind namespace pattern so utilities are generated) */
   --color-greenBnp: #39ac7f;
   --color-baseLight: #1eb3a0;
   --color-acid-green: #CAF939;
@@ -40,7 +28,6 @@
   --color-body: #43435C;
   --color-dark: #14142B;
 
-  /* nested grays */
   --color-gray-200: #E8E9F3;
   --color-gray-300: #CACDE3;
   --color-gray-400: #A0A3BD;
@@ -58,77 +45,64 @@
   --color-main-color: #1625AB;
   --color-main-color-hover: #1A2CC9;
 
-  /* red family */
+  /* red family: ensure numeric shade so tailwind generates bg-red-500 etc. */
   --color-red-100: #FCF1EE;
   --color-red-200: #fae4e1;
   --color-red-500: #D80800;
   --color-red-600: #BE3F23;
-  --color-red-error: #715959;
+  /* previously 'error' token renamed to a numeric shade to generate utilities */
+  --color-red-950: #715959;
 
   --color-blackLight: #1D1D1B;
   --color-toRename: #715959;
   --color-contentBgBlack: #2A3631;
 
-  /* --- FONTS (maps to font- utilities) --- */
-  --font-bnpType: "BnppType";
-  --font-bnpSansCondensedBold: "BnpSansCondensedBold";
-  --font-bnpSansCondensedExtraBold: "BnpSansCondensedExtraBold";
-  --font-bnpSansCondensedRegular: "BnpSansCondensedRegular";
-  --font-bnpTypeBold: "BnppTypeBold";
-  --font-bnppTypeRegular: "BnppTypeRegular";
-  --font-bnpSans: "BnppSans";
-  --font-bnppSansBold: "BnppSansBold";
-  --font-openSans: "Open Sans, Regular";
-  --font-openSansRegular: "OpenSansRegular";
-  --font-openSansBold: "OpenSansBold";
-  --font-helvicaNeue: "Helvetica Neue";
+  /* fonts: provide valid font-family stacks so font-* utilities are generated */
+  --font-bnpType: "BnppType", sans-serif;
+  --font-bnpSansCondensedBold: "BnpSansCondensedBold", sans-serif;
+  --font-bnpSansCondensedExtraBold: "BnpSansCondensedExtraBold", sans-serif;
+  --font-bnpSansCondensedRegular: "BnpSansCondensedRegular", sans-serif;
+  --font-bnpTypeBold: "BnppTypeBold", sans-serif;
+  --font-bnppTypeRegular: "BnppTypeRegular", sans-serif;
+  --font-bnpSans: "BnppSans", sans-serif;
+  --font-bnppSansBold: "BnppSansBold", sans-serif;
+  --font-openSans: "Open Sans", sans-serif;
+  --font-openSansRegular: "OpenSansRegular", sans-serif;
+  --font-openSansBold: "OpenSansBold", sans-serif;
+  --font-helvicaNeue: "Helvetica Neue", sans-serif;
 
-  /* --- FONT SIZES / TEXT (map to text- utilities) --- */
-  --text-2-5xl: 1.75rem; /* '2.5xl' -> key uses hyphen */
-  /* add other text-* theme variables if you use them in utilities */
+  /* text/size tokens */
+  --text-2-5xl: 1.75rem;
 
-  /* --- LINE HEIGHTS (map to leading- utilities) --- */
+  /* line heights */
   --leading-loose: 1.8;
 
-  /* --- SHADOWS (map to shadow- utilities) --- */
+  /* shadows */
   --shadow-card: 0px 8px 38px -28px rgba(8, 14, 71, 0.75);
   --shadow-main-color: 0px 4px 34px 0px rgba(22, 37, 171, 0.25);
 
-  /* --- z-indexes --- */
-  --z--1: -1; /* negative index (will create utility like z--1) */
+  /* z index example */
+  --z--1: -1;
 }
 
-/* 5) COMPONENTS: override/implement prose (typography) CSS and the "simple-quote" blocks
-   I reproduced your `proseCSS` and `simpleQuoteProse` values for the default and md breakpoints.
-   In v4 we can style .prose directly; responsive overrides are placed in an @media rule.
-*/
+/* COMPONENTS: prose + simple-quote (DEFAULT + md breakpoint) */
 @layer components {
-  /* Base prose (DEFAULT -> your quote-sm mix + proseCSS) */
-  .prose {
-    /* reset image margin */
-  }
   .prose img { margin: 0; }
 
-  /* --- prose typography rules (DEFAULT) --- */
   .prose h2 {
     font-size: 26px;
     font-family: var(--font-bnpSansCondensedBold);
     line-height: 34px;
     letter-spacing: 0.26px;
     color: #626262;
-    margin-top: 0;
-    margin-bottom: 0;
-    font-weight: unset;
+    margin-top: 0; margin-bottom: 0; font-weight: unset;
   }
   .prose h3 {
     font-size: 20px;
     font-family: var(--font-bnpSansCondensedBold);
     line-height: 24px;
-    letter-spacing: 0;
     color: #626262;
-    margin-top: 0;
-    margin-bottom: 0;
-    font-weight: unset;
+    margin-top: 0; margin-bottom: 0; font-weight: unset;
   }
   .prose h4 {
     font-size: 14px;
@@ -137,28 +111,17 @@
     line-height: 26px;
     letter-spacing: 0.13px;
     color: #626262;
-    margin-top: 0;
-    margin-bottom: 0;
-  }
-  .prose h5 {
-    font-size: 14px;
-    font-family: var(--font-bnpSansCondensedBold);
-    line-height: 14px;
-    letter-spacing: 0;
-    color: #626262;
-    margin-top: 0;
-    margin-bottom: 0;
+    margin-top: 0; margin-bottom: 0;
   }
   .prose p, .prose a, .prose i, .prose u, .prose strong, .prose li, .prose td {
     font-size: 14px;
-    font-family: "OpenSansRegular";
+    font-family: var(--font-openSansRegular);
     line-height: 26px;
-    letter-spacing: 0;
     color: #626262;
   }
   .prose a { color: black; }
-  .prose strong { font-family: "OpenSansBold"; }
-  .prose "figure.image" figcaption,
+  .prose strong { font-family: var(--font-openSansBold); }
+
   .prose figure.image figcaption {
     font-size: 14px !important;
     font-family: var(--font-bnpSansCondensedRegular);
@@ -168,7 +131,7 @@
     margin-top: 15px;
   }
 
-  /* --- simple-quote (quote-sm) --- */
+  /* simple-quote (DEFAULT - quote-sm) */
   .simple-quote {
     background-color: #ffffff;
     display: flex;
@@ -209,41 +172,19 @@
     letter-spacing: 0.14px;
   }
 
-  /* Responsive: md (approx same effect as your `md: { ... }` typography object) */
+  /* md breakpoint adjustments (mirrors your v3 `typography.md`) */
   @media (min-width: 768px) {
-    .prose h2 {
-      font-size: 30px;
-      line-height: 36px;
-      letter-spacing: 0.24px;
-    }
-    .prose h3 {
-      font-size: 24px;
-      line-height: 30px;
-      letter-spacing: 0;
-    }
-    .prose h4 {
-      font-size: 16px;
-      line-height: 28px;
-      letter-spacing: 0;
-    }
-    .prose h5 {
-      font-size: 18px; /* you set h5 to 18 in md */
-      line-height: 24px;
-      letter-spacing: 0;
-    }
+    .prose h2 { font-size: 30px; line-height: 36px; letter-spacing: 0.24px; }
+    .prose h3 { font-size: 24px; line-height: 30px; }
+    .prose h4 { font-size: 16px; line-height: 28px; }
+    .prose h5 { font-size: 18px; line-height: 24px; }
     .prose p, .prose a, .prose i, .prose u, .prose strong, .prose li, .prose td {
-      font-size: 16px;
-      line-height: 28px;
-      letter-spacing: 0;
+      font-size: 16px; line-height: 28px;
     }
     .prose figure.image figcaption {
-      font-size: 18px !important;
-      line-height: 23px !important;
-      letter-spacing: 0;
-      margin-top: 20px;
+      font-size: 18px !important; line-height: 23px !important; margin-top: 20px;
     }
 
-    /* simple-quote md variant -> we mirrored your quote-md through overrides */
     .simple-quote {
       padding: 40px 80px 28px 80px;
       padding-top: 5rem;
@@ -256,47 +197,18 @@
       text-align: center;
       color: #3c3145;
     }
-    .simple-quote blockquote::before { /* same as default */
-      content: url("/svg/quotes.svg");
-      position: absolute;
-      top: -2.5rem;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 42px;
-      height: 29px;
-    }
-    .simple-quote figcaption {
-      margin-top: 26px;
-      font-size: 18px;
-      line-height: 23px;
-    }
+    .simple-quote figcaption { margin-top: 26px; font-size: 18px; line-height: 23px; }
   }
 }
 
-/* 6) UTILITIES: custom animations / animation utilities + keyframes */
-@keyframes slide-r-in {
-  0% { opacity: 0; transform: translateX(-50%); }
-  100% { opacity: 1; transform: translateX(0); }
-}
-@keyframes slide-l-in {
-  0% { opacity: 0; transform: translateX(50%); }
-  100% { opacity: 1; transform: translateX(0); }
-}
+/* KEYFRAMES + UTILITIES for animations */
+@keyframes slide-r-in { 0% { opacity: 0; transform: translateX(-50%); } 100% { opacity: 1; transform: translateX(0); } }
+@keyframes slide-l-in { 0% { opacity: 0; transform: translateX(50%); } 100% { opacity: 1; transform: translateX(0); } }
 
 @layer utilities {
   .animate-slide-r { animation: slide-r-in 1s ease-in-out; }
   .animate-slide-l { animation: slide-l-in 1s ease-in-out; }
-}
 
-/* 7) Background-image token example (makes bg-hero-image utility available) */
-@layer theme {
-  :root {
-    /* create a background-image theme token used by bg-hero-image */
-    --background-image-hero-image: url('/images/hero-image.jpg');
-  }
-}
-
-/* 8) Optional: If you need a utility to reference that background (example) */
-@layer utilities {
-  .bg-hero-image { background-image: var(--background-image-hero-image); }
+  /* bg-hero-image helper using a theme token */
+  .bg-hero-image { background-image: url('/images/hero-image.jpg'); }
 }
