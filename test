@@ -1,19 +1,2 @@
 
-  /* -------------- FONTS -------------- */
-  --font-bnpType: "BnppType", sans-serif;
-  --font-bnpSansCondensedBold: "BnpSansCondensedBold", sans-serif;
-  --font-bnpSansCondensedExtraBold: "BnpSansCondensedExtraBold", sans-serif;
-  --font-bnpSansCondensedRegular: "BnpSansCondensedRegular", sans-serif;
-
-  --font-bnpTypeBold: "BnppTypeBold", sans-serif;
-  --font-bnppTypeRegular: "BnppTypeRegular", sans-serif;
-
-  --font-bnpSans: "BnppSans", sans-serif;
-  --font-bnppSansBold: "BnppSansBold", sans-serif;
-
-  /* 👇 THESE MUST BE FONT STACKS (NOT SINGLE WORD) */
-  --font-openSans: "Open Sans", sans-serif;
-  --font-openSansRegular: "OpenSansRegular", sans-serif;
-  --font-openSansBold: "OpenSansBold", sans-serif;
-
-  --font-helveticaNeue: "Helvetica Neue", sans-serif;
+  https://privatebin.at/?1e0c76d85b9b8a63#DRAtfgRFGiFMBJeMFhrBsiZQEvJcDuszA3p3Uf8VKfxz
