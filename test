@@ -1,717 +1,285 @@
-ni Below is a clean, production-ready way to build a separate TypeScript module that exports React components, compatible with React 19.2.3 and modern bundlers.
+You want a standalone TS library that exposes React 19.2.3 components using Puck + Tailwind 4, installable in any React app. Here is a concrete, production-grade pattern.
 
-I’ll assume:
-	•	You want a reusable package (component library style)
-	•	Written in TypeScript
-	•	Consumed by another React app
-	•	No framework lock-in (works with Vite, Next, CRA, etc.)
+## High-level architecture
 
-⸻
+- Build a **regular npm package** (not a separate app) that:
+  - Declares `react`, `react-dom`, and `tailwindcss` as **peerDependencies** pinned to React 19.2.3 and Tailwind 4 ranges.[1][2][3][4]
+  - Bundles:
+    - Your UI components
+    - Puck’s editor and renderer wrappers
+    - A small Tailwind 4 preset / CSS layer
+- Consumers:
+  - Install the package and peer deps.
+  - Import components and your Tailwind CSS layer in their app entry.
 
-1. Project Structure (Recommended)
+This keeps React/Tailwind single-instanced and avoids style conflicts.
 
-my-react-module/
-├─ src/
-│  ├─ components/
-│  │  └─ Button.tsx
-│  ├─ index.ts
-├─ package.json
-├─ tsconfig.json
-├─ tsconfig.build.json
-└─ README.md
+## Package setup (TS + bundler)
 
+Use TS + a modern bundler like **tsup**, **Vite library mode**, or **Rollup**. Example with `tsup`:
 
-⸻
+**package.json**
 
-2. Install Dependencies
-
-Runtime deps (⚠️ React should be peer dependency)
-
-npm install react@19.2.3 react-dom@19.2.3
-
-Dev deps
-
-npm install -D typescript @types/react @types/react-dom
-
-
-⸻
-
-3. package.json (Very Important)
-
+```jsonc
 {
-  "name": "@your-scope/my-react-module",
-  "version": "1.0.0",
-  "type": "module",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "name": "@your-scope/puck-ui",
+  "version": "0.1.0",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
+      "import": "./dist/index.mjs",
       "require": "./dist/index.cjs",
       "types": "./dist/index.d.ts"
     }
   },
-  "files": ["dist"],
   "peerDependencies": {
     "react": "^19.2.3",
-    "react-dom": "^19.2.3"
+    "react-dom": "^19.2.3",
+    "tailwindcss": "^4.0.0",
+    "@measured/puck": "^0.18.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "tsup": "^8.0.0",
+    "tailwindcss": "^4.0.0"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json"
+    "build": "tsup src/index.tsx --dts --format cjs,esm --sourcemap"
   }
 }
+```
 
-Why peerDependencies?
+**tsconfig.json**
 
-So the consuming app controls the React version → avoids multiple React copies.
-
-⸻
-
-4. TypeScript Config
-
-tsconfig.json (Base)
-
+```jsonc
 {
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "ES2022",
     "module": "ESNext",
     "jsx": "react-jsx",
-    "strict": true,
-    "moduleResolution": "Bundler",
-    "esModuleInterop": true,
-    "skipLibCheck": true
-  }
-}
-
-tsconfig.build.json (Library Output)
-
-{
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
     "declaration": true,
     "emitDeclarationOnly": false,
-    "outDir": "dist",
-    "rootDir": "src",
-    "module": "ESNext"
+    "esModuleInterop": true,
+    "moduleResolution": "Node",
+    "strict": true,
+    "skipLibCheck": true,
+    "baseUrl": "src",
+    "paths": {
+      "@puck-ui/*": ["./*"]
+    }
   },
   "include": ["src"]
 }
+```
 
+`tsup` works well for React libraries and will keep your bundle small.[2][5][6][1]
 
-⸻
+## Tailwind 4 in a library
 
-5. Example React Component
+Tailwind 4 uses a **CSS-first** approach with its new engine; consumers still need Tailwind configured in the host app.[3][4][7][8]
 
-src/components/Button.tsx
+Recommended pattern:
 
-import { type ReactNode } from "react";
+- Your library ships:
+  - A **CSS file** that defines the design tokens / layer for your components.
+  - Optionally a **Tailwind preset** (host app can extend their config with it).
 
-export interface ButtonProps {
-  children: ReactNode;
-  onClick?: () => void;
-}
+**src/styles/tailwind.css**
 
-export function Button({ children, onClick }: ButtonProps) {
-  return (
-    <button onClick={onClick} style={{ padding: "8px 12px" }}>
-      {children}
-    </button>
-  );
-}
-
-
-⸻
-
-6. Public Entry Point
-
-src/index.ts
-
-export * from "./components/Button";
-
-This is critical — never export deep internal paths.
-
-⸻
-
-7. Build
-
-npm run build
-
-You’ll get:
-
-dist/
-├─ index.js
-├─ index.d.ts
-
-
-⸻
-
-8. Usage in Another React App
-
-npm install @your-scope/my-react-module
-
-import { Button } from "@your-scope/my-react-module";
-
-export function App() {
-  return <Button onClick={() => alert("Hello")}>Click me</Button>;
-}
-
-
-⸻
-
-9. React 19 Notes (Important)
-
-React 19:
-	•	Uses automatic JSX runtime
-	•	No need to import React in every file
-	•	Types are bundled properly with @types/react@19
-
-Make sure consumer app also uses:
-
-"jsx": "react-jsx"
-
-
-⸻
-
-10. Optional Enhancements
-
-If you want:
-	•	🔹 Tree-shaking → already supported
-	•	🔹 CSS Modules → add .css exports
-	•	🔹 ESM + CJS → use tsup or rollup
-	•	🔹 Publish to npm → npm publish --access public
-
-⸻
-
-Next Step?
-
-Tell me how you want to consume this module:
-	•	Next.js?
-	•	Vite?
-	•	Monorepo (pnpm / turborepo)?
-	•	With CSS / Tailwind?
-	•	With hooks only?
-
-I’ll tailor the setup exactly to your use case.
-
-
-Great — for Next.js (Pages Router) there are a few non-obvious constraints you should follow to make your separated React 19 module work perfectly.
-
-Below is a battle-tested setup specifically for Next.js Pages Router consuming a TypeScript React component library.
-
-⸻
-
-Key Next.js Pages Router Constraints
-	1.	Single React instance (peerDependencies is mandatory)
-	2.	ESM output must be transpiled by Next
-	3.	No window / browser APIs at module top-level
-	4.	CSS must be imported explicitly
-	5.	Server/Client boundary awareness
-
-⸻
-
-1. Library Setup (Adjusted for Next.js)
-
-package.json
-
-{
-  "name": "@your-scope/ui",
-  "version": "1.0.0",
-  "type": "module",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    }
-  },
-  "peerDependencies": {
-    "react": "^19.2.3",
-    "react-dom": "^19.2.3"
+```css
+@layer base {
+  :root {
+    --puck-ui-bg: theme(colors.zinc.950);
+    --puck-ui-fg: theme(colors.zinc.50);
   }
 }
 
-✔ Do NOT bundle React
-✔ Do NOT mark React as dependency
-
-⸻
-
-2. Build Tool (Recommended: tsup)
-
-Next.js Pages Router does not transpile node_modules by default unless configured.
-
-Using tsup gives:
-	•	ESM + CJS
-	•	.d.ts
-	•	Next-friendly output
-
-Install
-
-npm install -D tsup
-
-tsup.config.ts
-
-import { defineConfig } from "tsup";
-
-export default defineConfig({
-  entry: ["src/index.ts"],
-  format: ["esm", "cjs"],
-  dts: true,
-  sourcemap: true,
-  clean: true,
-  external: ["react", "react-dom"],
-});
-
-Build
-
-npx tsup
-
-
-⸻
-
-3. React Component (Next-Safe)
-
-Button.tsx
-
-import { type ReactNode } from "react";
-
-export interface ButtonProps {
-  children: ReactNode;
-  onClick?: () => void;
-}
-
-export function Button({ children, onClick }: ButtonProps) {
-  return (
-    <button
-      onClick={onClick}
-      style={{ padding: 8 }}
-    >
-      {children}
-    </button>
-  );
-}
-
-🚫 NO useEffect that accesses window without guard
-🚫 NO top-level browser API calls
-
-⸻
-
-4. Entry Point
-
-src/index.ts
-
-export * from "./components/Button";
-
-
-⸻
-
-5. Consume in Next.js Pages Router
-
-Install
-
-npm install @your-scope/ui
-
-
-⸻
-
-6. Configure Next.js to Transpile the Package
-
-Required for ESM libraries
-
-next.config.js
-
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  transpilePackages: ["@your-scope/ui"],
-};
-
-module.exports = nextConfig;
-
-⚠️ Without this, you’ll see:
-	•	Unexpected token 'export'
-	•	Module parse failed
-	•	Cannot use import statement outside a module
-
-⸻
-
-7. Use in a Page
-
-pages/index.tsx
-
-import { Button } from "@your-scope/ui";
-
-export default function Home() {
-  return (
-    <main>
-      <Button onClick={() => alert("Hello from library")}>
-        Click me
-      </Button>
-    </main>
-  );
-}
-
-
-⸻
-
-8. CSS Support (Important)
-
-Library
-
-// src/components/Button.css
-.button {
-  padding: 8px;
-}
-
-import "./Button.css";
-
-export function Button() {
-  return <button className="button">Click</button>;
-}
-
-Next.js
-
-CSS must be imported from _app.tsx:
-
-// pages/_app.tsx
-import "@your-scope/ui/dist/style.css";
-
-✔ Required by Pages Router rules
-
-⸻
-
-9. SSR Safety Checklist
-
-Your library MUST NOT:
-
-❌ Access window, document, localStorage at module scope
-❌ Assume browser-only execution
-❌ Use useLayoutEffect without fallback
-
-Safe Pattern
-
-const isBrowser = typeof window !== "undefined";
-
-
-⸻
-
-10. React 19 Compatibility Notes
-	•	jsx: react-jsx required
-	•	No legacy JSX transform
-	•	No React.FC required
-	•	Types from @types/react@19 only
-
-⸻
-
-11. Common Next.js Errors & Fixes
-
-Error	Fix
-Invalid hook call	React in peerDependencies
-export not found	Rebuild library
-Unexpected token export	transpilePackages
-Hydration mismatch	SSR-unsafe logic
-
-
-⸻
-
-Recommended Next Step
-
-Tell me:
-	1.	Monorepo or separate repo?
-	2.	CSS strategy? (CSS Modules / Tailwind / Vanilla)
-	3.	Do you need client-only components?
-
-I can give you:
-	•	A monorepo template
-	•	SSR-safe hooks
-	•	Next-optimized component patterns
-	•	CI publishing pipeline
-
-Just say the word.
-
-Got it — this is an important distinction 👍
-
-You want an external UI package that:
-	•	✅ contains Puck
-	•	✅ contains Tailwind CSS v4
-	•	✅ ships ready-to-use styles
-	•	✅ works in any React project (Next Pages Router, App Router, Vite, CRA, etc.)
-	•	✅ does NOT rely on the consumer’s Tailwind setup
-
-This means your package owns Tailwind completely and exports compiled CSS.
-
-Below is the correct, portable architecture for that.
-
-⸻
-
-✅ Correct Mental Model
-
-Your UI package is a self-contained design system:
-	•	Tailwind v4 is compiled inside the package
-	•	Consumers just import:
-
-import "@acme/ui/styles.css";
-
-
-	•	No Tailwind config required in the host app
-	•	Puck blocks render consistently everywhere
-
-⸻
-
-1. UI Package Structure
-
-packages/ui/
-├─ src/
-│  ├─ components/
-│  │  └─ Hero.tsx
-│  ├─ puck/
-│  │  └─ hero.ts
-│  ├─ styles/
-│  │  └─ tailwind.css
-│  └─ index.ts
-├─ dist/
-│  ├─ styles.css
-│  ├─ index.js
-│  └─ index.d.ts
-├─ tailwind.config.ts
-├─ postcss.config.cjs
-├─ tsup.config.ts
-└─ package.json
-
-
-⸻
-
-2. Package Dependencies (CRITICAL)
-
-package.json
-
-{
-  "name": "@acme/ui",
-  "version": "1.0.0",
-  "type": "module",
-  "sideEffects": ["dist/styles.css"],
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs",
-      "types": "./dist/index.d.ts"
-    },
-    "./styles.css": "./dist/styles.css"
-  },
-  "peerDependencies": {
-    "react": "^19.2.3",
-    "react-dom": "^19.2.3"
-  },
-  "dependencies": {
-    "@measured/puck": "^0.x",
-    "tailwindcss": "^4.0.0"
+@layer components {
+  .puck-ui-card {
+    @apply rounded-xl border border-zinc-800 bg-zinc-900/70 p-4;
+  }
+
+  .puck-ui-button-primary {
+    @apply inline-flex items-center justify-center rounded-lg
+      bg-indigo-500 px-3 py-1.5 text-sm font-medium text-white
+      hover:bg-indigo-400 active:bg-indigo-500/90;
   }
 }
+```
 
-Why sideEffects?
+Consumers should:
 
-So bundlers don’t tree-shake your CSS away.
+```ts
+// e.g. in src/main.tsx or app entry
+import '@your-scope/puck-ui/styles.css'; // re-export of tailwind.css from your package
+```
 
-⸻
+And ensure their Tailwind 4 scanning picks your components by including `node_modules/@your-scope/puck-ui/**/*.{js,jsx,ts,tsx}` in `content` if Tailwind 4 config still uses content globs in their setup.[4][7][8][3]
 
-3. Tailwind v4 Setup (Internal)
+## Puck integration in the library
 
-src/styles/tailwind.css
+Puck is “just React components”, so you can wrap the editor and renderer in typed components.[5][6][9]
 
-@import "tailwindcss";
+**src/puckConfig.tsx**
 
-@theme {
-  --color-brand: oklch(0.62 0.19 260);
-}
+```tsx
+import type { Config } from '@measured/puck';
+import { Puck } from '@measured/puck';
+import '@measured/puck/puck.css';
 
-✔ Tailwind v4 syntax
-✔ No JS config required
-
-⸻
-
-tailwind.config.ts
-
-import type { Config } from "tailwindcss";
-
-export default {
-  content: ["./src/**/*.{ts,tsx}"],
-  theme: {},
-} satisfies Config;
-
-
-⸻
-
-postcss.config.cjs
-
-module.exports = {
-  plugins: {
-    tailwindcss: {},
-  },
-};
-
-
-⸻
-
-4. Build Tailwind Into CSS (MANDATORY)
-
-Add build script
-
-{
-  "scripts": {
-    "build:css": "tailwindcss -i src/styles/tailwind.css -o dist/styles.css --minify",
-    "build:ts": "tsup",
-    "build": "pnpm build:css && pnpm build:ts"
-  }
-}
-
-This produces a fully compiled CSS file.
-
-⸻
-
-5. UI Components (Normal Tailwind Usage)
-
-// src/components/Hero.tsx
-export interface HeroProps {
-  title: string;
-  subtitle?: string;
-}
-
-export function Hero({ title, subtitle }: HeroProps) {
-  return (
-    <section className="py-20 text-center bg-[--color-brand]/10">
-      <h1 className="text-4xl font-bold">{title}</h1>
-      {subtitle && (
-        <p className="mt-4 text-zinc-600">{subtitle}</p>
-      )}
-    </section>
-  );
-}
-
-✔ Pure React
-✔ No assumptions about host app
-
-⸻
-
-6. Puck Blocks INSIDE the Package
-
-// src/puck/hero.ts
-import type { ComponentConfig } from "@measured/puck";
-import { Hero } from "../components/Hero";
-
-export const heroBlock: ComponentConfig = {
-  render: Hero,
-  fields: {
-    title: { type: "text" },
-    subtitle: { type: "text" },
-  },
-};
-
-
-⸻
-
-7. Public API
-
-// src/index.ts
-export * from "./components/Hero";
-export * from "./puck/hero";
-
-
-⸻
-
-8. Build with tsup
-
-tsup.config.ts
-
-import { defineConfig } from "tsup";
-
-export default defineConfig({
-  entry: ["src/index.ts"],
-  format: ["esm", "cjs"],
-  dts: true,
-  clean: true,
-  external: ["react", "react-dom"],
-});
-
-
-⸻
-
-9. Consuming the Package (ANY React App)
-
-Install
-
-npm install @acme/ui
-
-Import styles ONCE
-
-Next.js (Pages Router)
-
-// pages/_app.tsx
-import "@acme/ui/styles.css";
-
-Vite / CRA
-
-import "@acme/ui/styles.css";
-
-
-⸻
-
-Use Components
-
-import { Hero } from "@acme/ui";
-
-<Hero title="Hello" subtitle="Reusable UI" />;
-
-
-⸻
-
-Use Puck
-
-import { heroBlock } from "@acme/ui";
-
-export const config = {
+const config: Config = {
   components: {
-    Hero: heroBlock,
-  },
+    HeadingBlock: {
+      fields: {
+        children: { type: 'text' }
+      },
+      render: ({ children }) => (
+        <h1 className="puck-ui-heading text-2xl font-semibold text-white">
+          {children}
+        </h1>
+      )
+    },
+    Card: {
+      fields: {
+        title: { type: 'text' },
+        body: { type: 'textarea' }
+      },
+      render: ({ title, body }) => (
+        <div className="puck-ui-card">
+          <h2 className="mb-2 text-lg font-medium text-white">{title}</h2>
+          <p className="text-sm text-zinc-300">{body}</p>
+        </div>
+      )
+    }
+  }
 };
 
+export type PuckConfig = typeof config;
+export { config };
+```
 
-⸻
+**src/Editor.tsx**
 
-10. SSR Safety (Still Required)
+```tsx
+import * as React from 'react';
+import { Puck } from '@measured/puck';
+import type { PuckData } from '@measured/puck';
+import { config } from './puckConfig';
 
-Your package must never:
+export type PuckEditorProps = {
+   PuckData;
+  onPublish: ( PuckData) => void | Promise<void>;
+};
 
-❌ Touch window at module scope
-❌ Use useLayoutEffect
-❌ Assume Tailwind exists in host
+export const PuckEditor: React.FC<PuckEditorProps> = ({ data, onPublish }) => {
+  return <Puck config={config} data={data} onPublish={onPublish} />;
+};
+```
 
-⸻
+**src/Renderer.tsx**
 
-11. Why This Works Everywhere
+```tsx
+import * as React from 'react';
+import { Render, type PuckData } from '@measured/puck';
+import { config } from './puckConfig';
 
-Feature	Reason
-No Tailwind dependency in host	CSS is precompiled
-Works in Next	Plain CSS import
-Works in Vite	ESM-safe
-Works in CRA	No config
-Works with Puck	Blocks exported
+export type PuckRendererProps = {
+   PuckData;
+};
 
+export const PuckRenderer: React.FC<PuckRendererProps> = ({ data }) => {
+  return <Render config={config} data={data} />;
+};
+```
 
-⸻
+**src/index.ts**
 
-✅ This Is the Only Correct Way to Ship Tailwind UI Cross-App
+```ts
+export * from './Editor';
+export * from './Renderer';
+export * from './puckConfig';
+export * from './components'; // your extra primitives if any
+import './styles.css';
+```
 
-Anything else (relying on host Tailwind) breaks portability.
+This gives consumers a simple API: they just use `<PuckEditor>` and `<PuckRenderer>` wired to their own persistence.
 
-⸻
+## Consuming from any React app
 
-If you want next:
-	•	🔹 CSS variables + themes
-	•	🔹 Multiple Tailwind builds (light/dark)
-	•	🔹 Versioned design tokens
-	•	🔹 Puck block factory generator
+In a host React 19 project (Next.js, Vite, CRA-like):
 
-Say the word — this setup scales to large design systems effortlessly.
+1. Install:
 
+```bash
+pnpm add @your-scope/puck-ui
+pnpm add -D tailwindcss@^4.0.0
+```
+
+2. Ensure React 19.2.3 and Tailwind 4 match peer ranges.[1][2][3][4]
+3. Import CSS once at the top-level entry:
+
+```ts
+import '@your-scope/puck-ui/styles.css';
+```
+
+4. Use components:
+
+```tsx
+import { PuckEditor, PuckRenderer } from '@your-scope/puck-ui';
+
+const initialData = { /* PuckData from DB or blank */ };
+
+export function Page() {
+  const [data, setData] = useState(initialData);
+
+  return (
+    <>
+      <PuckEditor
+        data={data}
+        onPublish={(d) => {
+          setData(d);
+          // persist to API / DB here
+        }}
+      />
+      <PuckRenderer data={data} />
+    </>
+  );
+}
+```
+
+## Module design tips for you as a TS expert
+
+- Keep **React 19 APIs** (hooks, Server Components constraints) in mind but avoid importing `react-dom/client` from the library; let the host app own rendering.[10][11][12][2]
+- Prefer **named exports** from your package; avoid default export to keep tree-shaking clean.
+- Treat Puck and Tailwind as **peerDependencies** when you want the host to control versions; otherwise keep Puck as a dependency but still peer React/Tailwind.[6][9][5]
+- Add **strict type exports** for Puck data/config so host apps can extend your config without losing types.
+
+If you share:
+- Your chosen bundler (Vite, tsup, Rollup) and
+- Whether you want to support SSR-only environments like Next.js App Router,
+
+a tailored minimal repo structure and build config can be sketched around that.
+
+Sources
+[1] React Versions https://react.dev/versions
+[2] React 19.2 https://react.dev/blog/2025/10/01/react-19-2
+[3] TailwindCSS 4.0.0 is out. - DEV Community https://dev.to/falselight/tailwindcss-version-400-has-been-released-29pp
+[4] Tailwind CSS v4.0 https://tailwindcss.com/blog/tailwindcss-v4
+[5] puckeditor/puck: The visual editor for React https://github.com/puckeditor/puck
+[6] Introduction | Puck https://puckeditor.com/docs
+[7] Tailwind CSS 4.0: Everything you need to know in one place https://daily.dev/blog/tailwind-css-40-everything-you-need-to-know-in-one-place
+[8] Upgrade guide - Getting started https://tailwindcss.com/docs/upgrade-guide
+[9] Puck - Agentic visual editor for React https://puckeditor.com
+[10] React 19.2 Just Dropped: What Actually Matters (My 3-Week ... https://dev.to/elvissautet/react-192-just-dropped-what-actually-matters-my-3-week-production-test-5387
+[11] Improvements in React 19 https://www.geeksforgeeks.org/reactjs/react-19-new-features-and-updates/
+[12] What's New in React 19 - Telerik.com https://www.telerik.com/blogs/whats-new-react-19
+[13] Releases · facebook/react https://github.com/facebook/react/releases
+[14] React 19.2.3 Update: Everything You Need to Know | New Features & Breaking Changes Explained https://www.youtube.com/watch?v=RewHfBu2Mg8
+[15] GitHub - alippo-com/puck-editor: The visual editor for React https://github.com/alippo-com/puck-editor
+[16] react/CHANGELOG.md at main · facebook/react https://github.com/facebook/react/blob/main/CHANGELOG.md
+[17] Tailwind CSS v4 is Here - Laravel News https://laravel-news.com/tailwind-css-v4-is-now-released
+[18] React - endoflife.date https://endoflife.date/react
+[19] When is the official release date for react 19? https://www.reddit.com/r/react/comments/1eowuua/when_is_the_official_release_date_for_react_19/
+[20] Puck - Open-source visual editor for React. Alternative to Builder.io / WordPress. https://www.reddit.com/r/javascript/comments/18m8o0g/puck_opensource_visual_editor_for_react/
