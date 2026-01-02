@@ -1,1 +1,432 @@
-https://privatebin.at/?8b06ee370322a6c5#3FvFo1zXwu47hLjuZ8q9RnenMTaMXRcCBRTamyDaBdf1
+Below is a clean, production-ready way to build a separate TypeScript module that exports React components, compatible with React 19.2.3 and modern bundlers.
+
+I’ll assume:
+	•	You want a reusable package (component library style)
+	•	Written in TypeScript
+	•	Consumed by another React app
+	•	No framework lock-in (works with Vite, Next, CRA, etc.)
+
+⸻
+
+1. Project Structure (Recommended)
+
+my-react-module/
+├─ src/
+│  ├─ components/
+│  │  └─ Button.tsx
+│  ├─ index.ts
+├─ package.json
+├─ tsconfig.json
+├─ tsconfig.build.json
+└─ README.md
+
+
+⸻
+
+2. Install Dependencies
+
+Runtime deps (⚠️ React should be peer dependency)
+
+npm install react@19.2.3 react-dom@19.2.3
+
+Dev deps
+
+npm install -D typescript @types/react @types/react-dom
+
+
+⸻
+
+3. package.json (Very Important)
+
+{
+  "name": "@your-scope/my-react-module",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": ["dist"],
+  "peerDependencies": {
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json"
+  }
+}
+
+Why peerDependencies?
+
+So the consuming app controls the React version → avoids multiple React copies.
+
+⸻
+
+4. TypeScript Config
+
+tsconfig.json (Base)
+
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "jsx": "react-jsx",
+    "strict": true,
+    "moduleResolution": "Bundler",
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  }
+}
+
+tsconfig.build.json (Library Output)
+
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": false,
+    "outDir": "dist",
+    "rootDir": "src",
+    "module": "ESNext"
+  },
+  "include": ["src"]
+}
+
+
+⸻
+
+5. Example React Component
+
+src/components/Button.tsx
+
+import { type ReactNode } from "react";
+
+export interface ButtonProps {
+  children: ReactNode;
+  onClick?: () => void;
+}
+
+export function Button({ children, onClick }: ButtonProps) {
+  return (
+    <button onClick={onClick} style={{ padding: "8px 12px" }}>
+      {children}
+    </button>
+  );
+}
+
+
+⸻
+
+6. Public Entry Point
+
+src/index.ts
+
+export * from "./components/Button";
+
+This is critical — never export deep internal paths.
+
+⸻
+
+7. Build
+
+npm run build
+
+You’ll get:
+
+dist/
+├─ index.js
+├─ index.d.ts
+
+
+⸻
+
+8. Usage in Another React App
+
+npm install @your-scope/my-react-module
+
+import { Button } from "@your-scope/my-react-module";
+
+export function App() {
+  return <Button onClick={() => alert("Hello")}>Click me</Button>;
+}
+
+
+⸻
+
+9. React 19 Notes (Important)
+
+React 19:
+	•	Uses automatic JSX runtime
+	•	No need to import React in every file
+	•	Types are bundled properly with @types/react@19
+
+Make sure consumer app also uses:
+
+"jsx": "react-jsx"
+
+
+⸻
+
+10. Optional Enhancements
+
+If you want:
+	•	🔹 Tree-shaking → already supported
+	•	🔹 CSS Modules → add .css exports
+	•	🔹 ESM + CJS → use tsup or rollup
+	•	🔹 Publish to npm → npm publish --access public
+
+⸻
+
+Next Step?
+
+Tell me how you want to consume this module:
+	•	Next.js?
+	•	Vite?
+	•	Monorepo (pnpm / turborepo)?
+	•	With CSS / Tailwind?
+	•	With hooks only?
+
+I’ll tailor the setup exactly to your use case.
+
+
+Great — for Next.js (Pages Router) there are a few non-obvious constraints you should follow to make your separated React 19 module work perfectly.
+
+Below is a battle-tested setup specifically for Next.js Pages Router consuming a TypeScript React component library.
+
+⸻
+
+Key Next.js Pages Router Constraints
+	1.	Single React instance (peerDependencies is mandatory)
+	2.	ESM output must be transpiled by Next
+	3.	No window / browser APIs at module top-level
+	4.	CSS must be imported explicitly
+	5.	Server/Client boundary awareness
+
+⸻
+
+1. Library Setup (Adjusted for Next.js)
+
+package.json
+
+{
+  "name": "@your-scope/ui",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "peerDependencies": {
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
+  }
+}
+
+✔ Do NOT bundle React
+✔ Do NOT mark React as dependency
+
+⸻
+
+2. Build Tool (Recommended: tsup)
+
+Next.js Pages Router does not transpile node_modules by default unless configured.
+
+Using tsup gives:
+	•	ESM + CJS
+	•	.d.ts
+	•	Next-friendly output
+
+Install
+
+npm install -D tsup
+
+tsup.config.ts
+
+import { defineConfig } from "tsup";
+
+export default defineConfig({
+  entry: ["src/index.ts"],
+  format: ["esm", "cjs"],
+  dts: true,
+  sourcemap: true,
+  clean: true,
+  external: ["react", "react-dom"],
+});
+
+Build
+
+npx tsup
+
+
+⸻
+
+3. React Component (Next-Safe)
+
+Button.tsx
+
+import { type ReactNode } from "react";
+
+export interface ButtonProps {
+  children: ReactNode;
+  onClick?: () => void;
+}
+
+export function Button({ children, onClick }: ButtonProps) {
+  return (
+    <button
+      onClick={onClick}
+      style={{ padding: 8 }}
+    >
+      {children}
+    </button>
+  );
+}
+
+🚫 NO useEffect that accesses window without guard
+🚫 NO top-level browser API calls
+
+⸻
+
+4. Entry Point
+
+src/index.ts
+
+export * from "./components/Button";
+
+
+⸻
+
+5. Consume in Next.js Pages Router
+
+Install
+
+npm install @your-scope/ui
+
+
+⸻
+
+6. Configure Next.js to Transpile the Package
+
+Required for ESM libraries
+
+next.config.js
+
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  transpilePackages: ["@your-scope/ui"],
+};
+
+module.exports = nextConfig;
+
+⚠️ Without this, you’ll see:
+	•	Unexpected token 'export'
+	•	Module parse failed
+	•	Cannot use import statement outside a module
+
+⸻
+
+7. Use in a Page
+
+pages/index.tsx
+
+import { Button } from "@your-scope/ui";
+
+export default function Home() {
+  return (
+    <main>
+      <Button onClick={() => alert("Hello from library")}>
+        Click me
+      </Button>
+    </main>
+  );
+}
+
+
+⸻
+
+8. CSS Support (Important)
+
+Library
+
+// src/components/Button.css
+.button {
+  padding: 8px;
+}
+
+import "./Button.css";
+
+export function Button() {
+  return <button className="button">Click</button>;
+}
+
+Next.js
+
+CSS must be imported from _app.tsx:
+
+// pages/_app.tsx
+import "@your-scope/ui/dist/style.css";
+
+✔ Required by Pages Router rules
+
+⸻
+
+9. SSR Safety Checklist
+
+Your library MUST NOT:
+
+❌ Access window, document, localStorage at module scope
+❌ Assume browser-only execution
+❌ Use useLayoutEffect without fallback
+
+Safe Pattern
+
+const isBrowser = typeof window !== "undefined";
+
+
+⸻
+
+10. React 19 Compatibility Notes
+	•	jsx: react-jsx required
+	•	No legacy JSX transform
+	•	No React.FC required
+	•	Types from @types/react@19 only
+
+⸻
+
+11. Common Next.js Errors & Fixes
+
+Error	Fix
+Invalid hook call	React in peerDependencies
+export not found	Rebuild library
+Unexpected token export	transpilePackages
+Hydration mismatch	SSR-unsafe logic
+
+
+⸻
+
+Recommended Next Step
+
+Tell me:
+	1.	Monorepo or separate repo?
+	2.	CSS strategy? (CSS Modules / Tailwind / Vanilla)
+	3.	Do you need client-only components?
+
+I can give you:
+	•	A monorepo template
+	•	SSR-safe hooks
+	•	Next-optimized component patterns
+	•	CI publishing pipeline
+
+Just say the word.
