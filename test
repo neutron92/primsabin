@@ -1,4 +1,4 @@
-Below is a clean, production-ready way to build a separate TypeScript module that exports React components, compatible with React 19.2.3 and modern bundlers.
+ni Below is a clean, production-ready way to build a separate TypeScript module that exports React components, compatible with React 19.2.3 and modern bundlers.
 
 I’ll assume:
 	•	You want a reusable package (component library style)
@@ -430,3 +430,288 @@ I can give you:
 	•	CI publishing pipeline
 
 Just say the word.
+
+Got it — this is an important distinction 👍
+
+You want an external UI package that:
+	•	✅ contains Puck
+	•	✅ contains Tailwind CSS v4
+	•	✅ ships ready-to-use styles
+	•	✅ works in any React project (Next Pages Router, App Router, Vite, CRA, etc.)
+	•	✅ does NOT rely on the consumer’s Tailwind setup
+
+This means your package owns Tailwind completely and exports compiled CSS.
+
+Below is the correct, portable architecture for that.
+
+⸻
+
+✅ Correct Mental Model
+
+Your UI package is a self-contained design system:
+	•	Tailwind v4 is compiled inside the package
+	•	Consumers just import:
+
+import "@acme/ui/styles.css";
+
+
+	•	No Tailwind config required in the host app
+	•	Puck blocks render consistently everywhere
+
+⸻
+
+1. UI Package Structure
+
+packages/ui/
+├─ src/
+│  ├─ components/
+│  │  └─ Hero.tsx
+│  ├─ puck/
+│  │  └─ hero.ts
+│  ├─ styles/
+│  │  └─ tailwind.css
+│  └─ index.ts
+├─ dist/
+│  ├─ styles.css
+│  ├─ index.js
+│  └─ index.d.ts
+├─ tailwind.config.ts
+├─ postcss.config.cjs
+├─ tsup.config.ts
+└─ package.json
+
+
+⸻
+
+2. Package Dependencies (CRITICAL)
+
+package.json
+
+{
+  "name": "@acme/ui",
+  "version": "1.0.0",
+  "type": "module",
+  "sideEffects": ["dist/styles.css"],
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    },
+    "./styles.css": "./dist/styles.css"
+  },
+  "peerDependencies": {
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
+  },
+  "dependencies": {
+    "@measured/puck": "^0.x",
+    "tailwindcss": "^4.0.0"
+  }
+}
+
+Why sideEffects?
+
+So bundlers don’t tree-shake your CSS away.
+
+⸻
+
+3. Tailwind v4 Setup (Internal)
+
+src/styles/tailwind.css
+
+@import "tailwindcss";
+
+@theme {
+  --color-brand: oklch(0.62 0.19 260);
+}
+
+✔ Tailwind v4 syntax
+✔ No JS config required
+
+⸻
+
+tailwind.config.ts
+
+import type { Config } from "tailwindcss";
+
+export default {
+  content: ["./src/**/*.{ts,tsx}"],
+  theme: {},
+} satisfies Config;
+
+
+⸻
+
+postcss.config.cjs
+
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+  },
+};
+
+
+⸻
+
+4. Build Tailwind Into CSS (MANDATORY)
+
+Add build script
+
+{
+  "scripts": {
+    "build:css": "tailwindcss -i src/styles/tailwind.css -o dist/styles.css --minify",
+    "build:ts": "tsup",
+    "build": "pnpm build:css && pnpm build:ts"
+  }
+}
+
+This produces a fully compiled CSS file.
+
+⸻
+
+5. UI Components (Normal Tailwind Usage)
+
+// src/components/Hero.tsx
+export interface HeroProps {
+  title: string;
+  subtitle?: string;
+}
+
+export function Hero({ title, subtitle }: HeroProps) {
+  return (
+    <section className="py-20 text-center bg-[--color-brand]/10">
+      <h1 className="text-4xl font-bold">{title}</h1>
+      {subtitle && (
+        <p className="mt-4 text-zinc-600">{subtitle}</p>
+      )}
+    </section>
+  );
+}
+
+✔ Pure React
+✔ No assumptions about host app
+
+⸻
+
+6. Puck Blocks INSIDE the Package
+
+// src/puck/hero.ts
+import type { ComponentConfig } from "@measured/puck";
+import { Hero } from "../components/Hero";
+
+export const heroBlock: ComponentConfig = {
+  render: Hero,
+  fields: {
+    title: { type: "text" },
+    subtitle: { type: "text" },
+  },
+};
+
+
+⸻
+
+7. Public API
+
+// src/index.ts
+export * from "./components/Hero";
+export * from "./puck/hero";
+
+
+⸻
+
+8. Build with tsup
+
+tsup.config.ts
+
+import { defineConfig } from "tsup";
+
+export default defineConfig({
+  entry: ["src/index.ts"],
+  format: ["esm", "cjs"],
+  dts: true,
+  clean: true,
+  external: ["react", "react-dom"],
+});
+
+
+⸻
+
+9. Consuming the Package (ANY React App)
+
+Install
+
+npm install @acme/ui
+
+Import styles ONCE
+
+Next.js (Pages Router)
+
+// pages/_app.tsx
+import "@acme/ui/styles.css";
+
+Vite / CRA
+
+import "@acme/ui/styles.css";
+
+
+⸻
+
+Use Components
+
+import { Hero } from "@acme/ui";
+
+<Hero title="Hello" subtitle="Reusable UI" />;
+
+
+⸻
+
+Use Puck
+
+import { heroBlock } from "@acme/ui";
+
+export const config = {
+  components: {
+    Hero: heroBlock,
+  },
+};
+
+
+⸻
+
+10. SSR Safety (Still Required)
+
+Your package must never:
+
+❌ Touch window at module scope
+❌ Use useLayoutEffect
+❌ Assume Tailwind exists in host
+
+⸻
+
+11. Why This Works Everywhere
+
+Feature	Reason
+No Tailwind dependency in host	CSS is precompiled
+Works in Next	Plain CSS import
+Works in Vite	ESM-safe
+Works in CRA	No config
+Works with Puck	Blocks exported
+
+
+⸻
+
+✅ This Is the Only Correct Way to Ship Tailwind UI Cross-App
+
+Anything else (relying on host Tailwind) breaks portability.
+
+⸻
+
+If you want next:
+	•	🔹 CSS variables + themes
+	•	🔹 Multiple Tailwind builds (light/dark)
+	•	🔹 Versioned design tokens
+	•	🔹 Puck block factory generator
+
+Say the word — this setup scales to large design systems effortlessly.
+
