@@ -1,3 +1,24 @@
+ {Array.isArray(children) ? (
+            children.map((child, index) => (
+              <div
+                key={index}
+                className={clsx(
+                  'flex flex-[0_0_70%] min-w-0 ml-2 justify-center items-center',
+                  {
+                    'opacity-20': currentSlide !== index,
+                  },
+                )}
+              >
+                <div className="flex items-center justify-center w-full max-h-max text-6xl font-semibold rounded-[1.8rem] shadow-[inset_0_0_0_0.2rem_rgba(0,0,0,0.4)] select-none">
+                  {child}
+                </div>
+              </div>
+            ))
+          ) : (
+            <> {children}</>
+          )}
+
+
 import React, {
   useCallback,
   useEffect,
